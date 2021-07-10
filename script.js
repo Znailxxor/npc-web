@@ -4,62 +4,6 @@
  *
  */
 
-// Color buttons for each section of the GUI
-var buttons = [
-    { name: "background", section: "Objects_Items", indexes: [] },
-    { name: "ninja", section: "Objects_Items", indexes: [] },
-    { name: "entityMine", section: "Objects_Items", indexes: [] },
-    { name: "entityGold", section: "Objects_Items", indexes: [] },
-    { name: "entityDoorExit", section: "Objects_Items", indexes: [] },
-    { name: "entityDoorExitSwitch", section: "Objects_Items", indexes: [] },
-    { name: "entityDoorRegular", section: "Objects_Items", indexes: [] },
-    { name: "entityDoorLocked", section: "Objects_Items", indexes: [] },
-    { name: "entityDoorTrap", section: "Objects_Items", indexes: [] },
-    { name: "entityLaunchPad", section: "Objects_Items", indexes: [] },
-    { name: "entityOneWayPlatform", section: "Objects_Items", indexes: [] },
-    { name: "entityDroneChaingun", section: "Objects_Items", indexes: [] },
-    { name: "entityDroneLaser", section: "Objects_Items", indexes: [] },
-    { name: "entityDroneZap", section: "Objects_Items", indexes: [] },
-    { name: "entityDroneChaser", section: "Objects_Items", indexes: [] },
-    { name: "entityFloorGuard", section: "Objects_Items", indexes: [] },
-    { name: "entityBounceBlock", section: "Objects_Items", indexes: [] },
-    { name: "entityRocket", section: "Objects_Items", indexes: [] },
-    { name: "entityTurret", section: "Objects_Items", indexes: [] },
-    { name: "entityThwomp", section: "Objects_Items", indexes: [] },
-    { name: "entityEvilNinja", section: "Objects_Items", indexes: [] },
-    { name: "entityDualLaser", section: "Objects_Items", indexes: [] },
-    { name: "entityBoostPad", section: "Objects_Items", indexes: [] },
-    { name: "entityBat", section: "Objects_Items", indexes: [] },
-    { name: "entityEyeBat", section: "Objects_Items", indexes: [] },
-    { name: "entityShoveThwomp", section: "Objects_Items", indexes: [] },
-    { name: "menu", section: "Menu_Items", indexes: [0, 3, 4, 10, 17, 29] },
-    { name: "menu", section: "Menu_Items", indexes: [8, 12, 25, 26, 27, 31, 33, 37] },
-    { name: "menu", section: "Menu_Items", indexes: [1, 2, 13, 16, 32] },
-    { name: "menu", section: "Menu_Items", indexes: [5, 7, 9, 22, 23, 30] },
-    { name: "menu", section: "Menu_Items", indexes: [18, 19, 20, 21] },
-    { name: "menu", section: "Menu_Items", indexes: [14, 15] },
-    { name: "menu", section: "Menu_Items", indexes: [24, 28, 34, 35, 38, 40, 41] },
-    { name: "menu", section: "Menu_Items", indexes: [6, 11, 36, 39] },
-    { name: "editor", section: "Editor_Items", indexes: [0, 2, 5] },
-    { name: "editor", section: "Editor_Items", indexes: [3, 6, 7, 8] },
-    { name: "editor", section: "Editor_Items", indexes: [1, 4, 9] },
-    { name: "timeBar", section: "Timebar_Items", indexes: [0, 2, 4, 6] },
-    { name: "timeBar", section: "Timebar_Items", indexes: [1] },
-    { name: "timeBarRace", section: "Timebar_Items", indexes: [0, 1, 5, 6, 7] },
-    { name: "timeBarRace", section: "Timebar_Items", indexes: [2, 8, 9, 10] },
-    { name: "timeBarRace", section: "Timebar_Items", indexes: [3, 11, 12, 13] },
-    { name: "timeBarRace", section: "Timebar_Items", indexes: [4, 14, 15, 16] },
-    { name: "timeBar", section: "Timebar_Items", indexes: [3, 5, 7] },
-    { name: "headbands", section: "Headbands_Items", indexes: [0, 2, 4, 6] },
-    { name: "headbands", section: "Headbands_Items", indexes: [1, 3, 5, 7] },
-    { name: "headbands", section: "Headbands_Items", indexes: [8, 9, 10, 11] },
-    { name: "headbands", section: "Headbands_Items", indexes: [12, 13, 14, 15, 16] },
-    { name: "explosions", section: "Effects_Items", indexes: [] },
-    { name: "fxDroneZap", section: "Effects_Items", indexes: [] },
-    { name: "fxFloorguardZap", section: "Effects_Items", indexes: [] },
-    { name: "fxNinja", section: "Effects_Items", indexes: [] }
-]
-
 // File strings
 var files = {};
 var files_loaded = {};
@@ -67,15 +11,28 @@ var files_loaded = {};
 var images_loaded = {};
 
 var sprite_canvas, ctx, currentSection;
+var metanet_palettes;
 
 // Creates the buttons of each section, on load
-function create_button(i, o, indexes, sect) {
-    var section = document.getElementById(sect);
-    var colors = getObjects(o, indexes);
+function create_button(i, label, filename, indices, listId, sectionId) {
+    var colors = cget(filename, indices)
+    var list = document.getElementById(listId)
+    var section = document.getElementById(sectionId);
+    var areaId = "i" + i;
+
+    var li = document.createElement("li");
+    var title = document.createTextNode(label);
+    li.appendChild(title);
+    li.id = "l" + i
+    li.classList = "item"
+    li.setAttribute("role", "option")
+    li.onclick = function () { tab(areaId) }
+
     var area = document.createElement("div");
-    area.id = "i" + i;
+    area.id = areaId;
     area.classList = "section";
     area.style.display = "none";
+
     for (var j = 0; j < colors.length; j++) {
         var row = document.createElement("div");
         row.classList = "color-row";
@@ -83,10 +40,10 @@ function create_button(i, o, indexes, sect) {
         var inputDiv = document.createElement("div");
         inputDiv.className = "picker-col";
         var input = document.createElement("input");
-        var inputId = o + (indexes.length == 0 ? j : indexes[j]);
+        const idx = indices ? indices[j] : j
+        var inputId = filename + idx
         input.id = inputId;
         input.classList = "jscolor {onFineChange:'redrawCanvas(this)'}";
-        input.value = colors[j]["color"];
         inputDiv.appendChild(input);
 
         var textDiv = document.createElement("div");
@@ -102,24 +59,39 @@ function create_button(i, o, indexes, sect) {
         if (colors[j].sprite != null) {
             var img = new Image();
             img.id = inputId;
-            images_loaded[inputId] = {};
-            images_loaded[inputId].outline = (colors[j].outline == true) ? true : false;
+            images_loaded[inputId] = {
+                outline: Boolean(colors[j].outline)
+            };
             img.onload = function() {
                 images_loaded[this.id].image = this;
-                console.log(images_loaded[this.id]);
+                // console.log(images_loaded[this.id]);
             }
             img.src = "images/" + colors[j].sprite;
         }
     }
     section.appendChild(area);
+    list.appendChild(li);
 }
 
 // Create all buttons, on load
 function create_buttons() {
-    for (var i = 0; i < buttons.length; i++) {
-		//console.log( buttons[i]["name"] + ' ' +  buttons[i]["indexes"] + ' ' + buttons[i]["section"]);
-        create_button(i, buttons[i]["name"], buttons[i]["indexes"], buttons[i]["section"]);
+    var count = 0
+    for (var n = 0; n < sections.length; n++) {
+        var section = sections[n]
+        for (var i = 0; i < section.items.length; i++) {
+            var item = section.items[i]
+            create_button(
+                count,
+                item.label,
+                item.filename,
+                item.indices,
+                section.listId,
+                section.sectionId,
+            );
+            count++
+        }
     }
+
     log("Info: Successfully loaded NPC.");
 }
 
@@ -222,7 +194,7 @@ function tab(item, type) {
         } else {
             document.getElementsByClassName("full-page")[0].style.display = "flex";
         }
-		
+
 		// un-highlight all tab menu buttons
 		btns = document.getElementsByClassName("tab");
 		//console.log(btns);
@@ -232,7 +204,7 @@ function tab(item, type) {
 		// highlight the tab menu button we have activated
 		var b = document.getElementById('b'+item);
 		b.classList = 'tab active';
-		
+
     }
 	// redraw canvas TODO: only redraw when it's being displayed
     redrawCanvas()
@@ -304,87 +276,131 @@ function check_palette() {
     }
 }
 
+function populate_metanet_dropdown () {
+    // Populate Metanet Palettes dropdown list
+    metanet_palettes
+        .then(files => {
+            const palette_names = []
+            files.forEach((_, file) => {
+                if (file.dir) {
+                    palette_names.push(file.name.slice(0, -1))
+                }
+            })
+            palette_names.sort((a, b) => {
+                return (a.toLowerCase() > b.toLowerCase()) ? 1 : -1
+            })
+
+            const fileInput3 = document.getElementById('file3');
+            const dpal = document.getElementById("dpal");
+
+            palette_names.forEach(name => {
+                const opt = document.createElement("option")
+                const text = document.createTextNode(name)
+                opt.appendChild(text)
+                opt.value = name
+                dpal.appendChild(opt)
+            })
+
+            fileInput3.addEventListener('click', (e) => {
+                const val = dpal.value
+                log(`Info: Loading palette "${val}"...`)
+                load_zipped_palette(val)
+            })
+        })
+}
+
+function load_palette (aux) {
+    files = {};
+    files_loaded = {};
+    // Retrieve selected files
+    var files_raw = [];
+    for (var i = 0; i < aux.length; i++) {
+        files_raw[i] = aux[i];
+    }
+    // Remove extraneous files
+    var objs = Object.keys(objects);
+    for (var i = 0; i < files_raw.length; i++) {
+        var end_index = files_raw[i].name.length - 4;
+        var filename = files_raw[i].name.substring(0, end_index);
+        if (!objs.includes(filename)) {
+            files_raw.splice(i, 1);
+        }
+    }
+    // Check for existence of all palette files
+    var filenames = [];
+    for (var i = 0; i < files_raw.length; i++) { filenames.push(files_raw[i].name); }
+    var inexistant = [];
+    var inex_count = 0;
+    for (var i = 0; i < objs.length; i++) {
+        if (!filenames.includes(objs[i] + ".tga")) {
+            inexistant.push(objs[i] + ".tga");
+            inex_count += 1;
+        }
+    }
+    // Proceed only if all files were correct
+    if (inex_count > 0) {
+        // Clean files
+        alert("Missing files:\n\n" + inexistant.join("\n"));
+        log("Error loading palette: Missing " + inex_count.toString() + " files.");
+    } else {
+        // Read the files
+        for (var i = 0; i < files_raw.length; i++) {
+            var file = files_raw[i];
+            var reader = new FileReader();
+            reader.f = file;
+            reader.onload = list;
+            reader.readAsArrayBuffer(file);
+        }
+        // Since file reading is done asynchronously, we periodically check for
+        // the palette's availability until it's ready.
+        check_palette();
+    }
+}
+
+function load_zipped_palette (palette_name) {
+    metanet_palettes
+        .then(function (zip) {
+            const keys = Object.keys(objects);
+            return Promise.all(keys.map(key => {
+                const filename = key + ".tga"
+                return zip.folder(palette_name).file(filename).async("blob")
+                    .then(blob => {
+                        return new File([blob], filename)
+                    })
+            }))
+        })
+        .then(load_palette)
+}
+
 function init_stuff_onload() {
+    // fetch ZIP of metanet palettes
+    log("Info: Fetching metanet palettes...")
+    metanet_palettes = fetch('https://edelkas.github.io/npc-web/metanet_palettes/metanet_palettes.zip')
+        .then(function (response) {
+            return (response.status === 200 || response.status === 0)
+                ? Promise.resolve(response.blob())
+                : Promise.reject(new Error(response.statusText))
+        })
+        .then(JSZip.loadAsync)
+        .then(function(zip) {
+            load_zipped_palette("vasquez")
+            populate_metanet_dropdown()
+            return zip
+        })
 
-	// Populate Metanet Palettes dropdown list
-	var fileInput3 = document.getElementById('file3');
-    fileInput3.addEventListener('change', function(e) {
-		//////////////////// NOT WORKING
-		console.log('hei');
-		//var dateBefore = new Date();
-		var f = fileInput3.files[0]
-		console.log(f);
-		JSZip.loadAsync(f)                                   // 1) read the Blob
-			.then(function(zip) {
-				var dateAfter = new Date();
-				//$title.append($("<span>", {
-				//    "class": "small",
-				//    text:" (loaded in " + (dateAfter - dateBefore) + "ms)"
-				//}));
-
-				zip.forEach(function (relativePath, zipEntry) {  // 2) print entries
-					var dpal = document.getElementById("dpal");
-					dpal.innerHTML += '<option value="'+zipEntry.name+'">'+zipEntry.name+'</option>';
-				});
-			}, function (e) {
-				console.log(e.message);
-			});
-	});
-		
     // Listener to Load Palette (35 .tga files)
     var fileInput = document.getElementById('file');
     fileInput.addEventListener('change', function(e) {
-		files = {};
-		files_loaded = {};
-        // Retrieve selected files
-        var aux = fileInput.files;
-        var files_raw = [];
-        for (var i = 0; i < aux.length; i++) { files_raw[i] = aux[i]; }
-        // Remove extraneous files
-        var objs = Object.keys(objects);
-        for (var i = 0; i < files_raw.length; i++) {
-            var end_index = files_raw[i].name.length - 4;
-            var filename = files_raw[i].name.substring(0, end_index);
-            if (!objs.includes(filename)) { files_raw.splice(i, 1); }
-        }
-        // Check for existence of all palette files
-        var filenames = [];
-        for (var i = 0; i < files_raw.length; i++) { filenames.push(files_raw[i].name); }
-        var inexistant = [];
-        var inex_count = 0;
-        for (var i = 0; i < objs.length; i++) {
-            if (!filenames.includes(objs[i] + ".tga")) {
-                inexistant.push(objs[i] + ".tga");
-                inex_count += 1;
-            }
-        }
-        // Proceed only if all files were correct
-        if (inex_count > 0) {
-            // Clean files
-            alert("Missing files:\n\n" + inexistant.join("\n"));
-            log("Error loading palette: Missing " + inex_count.toString() + " files.");
-        } else {
-            // Read the files
-            for (var i = 0; i < files_raw.length; i++) {
-                var file = files_raw[i];
-                var reader = new FileReader();
-                reader.f = file;
-                reader.onload = list;
-                reader.readAsArrayBuffer(file);
-            }
-            // Since file reading is done asynchronously, we periodically check for
-            // the palette's availability until it's ready.
-            check_palette();
-        }
+        load_palette(fileInput.files)
     });
 
     // Rendering stuff
     sprite_canvas = document.getElementById("sprite-renderer");
     ctx = this.sprite_canvas.getContext("2d");
-	
+
 	// Create the buttons
 	create_buttons();
-	
+
 	// Init jscolor
 	jscolor.installByClassName('jscolor');
 }
@@ -392,7 +408,7 @@ function init_stuff_onload() {
 if (window.addEventListener) // W3C standard
 {
   window.addEventListener('load', init_stuff_onload, false);
-} 
+}
 else if (window.attachEvent) // Microsoft
 {
   window.attachEvent('onload', init_stuff_onload);
@@ -455,7 +471,7 @@ function check_file(filename) {
     var height = parseInt(header.slice(14, 16).reverse().join(""), 16);
     var pixel_depth = parseInt(header[16], 16);
     var colors = Math.round(width / 64);
-    
+
     if (colors != objects[filename].length) {
         errorHappened = true;
         errorMessage += ("* The image doesn't have the right amount of colors (has " +
